@@ -15,14 +15,7 @@
 /**
  * @type {Cypress.PluginConfig}
  */
-
-const csvdata = require('csvdata');
-
 module.exports = (on, config) => {
-  on('task', {
-    log(message) {
-      csvdata.write('cypress/fixtures/huckTest2.csv', message, { append: true });
-      return null
-    }
-  });
+  // `on` is used to hook into various events Cypress emits
+  // `config` is the resolved Cypress config
 }
