@@ -1,8 +1,18 @@
 import { urls } from '../support/urlsList.js';
 
-const header = 'brandName,itemName,itemColor,itemPrice,itemImage';
+const header = 'brandName,itemName,itemColor,currentPrice,regularPrice,inStock';
 
 describe('scrape', () => {
+  before(() => {
+    cy.visit(`https://huckberry.com/store/${urls[0]}`);
+    cy.get('.modal-close-button').should('be.visible').click();
+    cy.get('.modal-content').should('not.exist');
+    cy.writeFile(
+      'data/scrape.csv',
+      `${header}`
+    );
+  });
+
   beforeEach(() => {
     Cypress.Cookies.preserveOnce(
       '__cfduid',
@@ -13,44 +23,35 @@ describe('scrape', () => {
     );
   });
 
-  it('closes huckberry modal', () => {
-    cy.visit(`https://huckberry.com/store/${urls[0]}`);
-    cy.get('.modal-close-button').click();
-    cy.get('.modal-content').should('not.exist');
-  });
-
-  it('gets item 1 info', () => {
-    const itemInfo = [];
-    cy.get(`a[itemprop='brand']`).invoke('text').then(text => { itemInfo.push(text) });
-    cy.get(`h1[itemprop='name']`).invoke('text').then(text => { itemInfo.push(text) });
-    cy.get('p.mb1').children().eq(2).invoke('text').then(text => { itemInfo.push(text) });
-    cy.get(`meta[itemprop='price']`).invoke('attr', 'content').then(value => { itemInfo.push(value) });
-    cy.get(`img[itemprop='image']`).invoke('attr', 'src').then(value => {
-      itemInfo.push(value);
-      cy.writeFile(
-        'cypress/fixtures/huckTest1.csv',
-        `${header}\n${itemInfo[0]},${itemInfo[1]},${itemInfo[2]},${itemInfo[3]},${itemInfo[4]}`
-      );
-    });
-  });
-  
-  for (let i = 1; i < urls.length; i++) {
-    it(`gets item ${i+1} info`, () => {
+  for (let i = 0; i < urls.length; i++) {
+    it(`gets item ${i + 1} info`, () => {
       const readFileData = [];
       cy.visit(`https://huckberry.com/store/${urls[i]}`);
-      cy.readFile('cypress/fixtures/huckTest1.csv').then(data => {
+      cy.readFile('data/scrape.csv').then(data => {
         readFileData.push(data);
       });
       const itemInfo = [];
-      cy.get(`a[itemprop='brand']`).invoke('text').then(text => { itemInfo.push(text) });
-      cy.get(`h1[itemprop='name']`).invoke('text').then(text => { itemInfo.push(text) });
+      cy.get(`a[class='color--gray-text-light color--blue--hover fg--xxsmall fw--500']`).invoke('text').then(text => { itemInfo.push(text) });
+      cy.get(`h1[class='fg-condensed--small pr2 fw--600']`).invoke('text').then(text => { itemInfo.push(text) });
       cy.get('p.mb1').children().eq(2).invoke('text').then(text => { itemInfo.push(text) });
-      cy.get(`meta[itemprop='price']`).invoke('attr', 'content').then(value => { itemInfo.push(value) });
-      cy.get(`img[itemprop='image']`).invoke('attr', 'src').then(value => {
-        itemInfo.push(value);
+      cy.get(`div[class='media__fixed text-right']`).children().then(children => {
+        if (children.length === 2) {
+          itemInfo.push(children[0].textContent.replace(',', ''));
+          itemInfo.push(children[1].textContent.replace(',', ''));
+        } else {
+          itemInfo.push(children[0].textContent.replace(',', ''));
+          itemInfo.push(children[0].textContent.replace(',', ''));
+        }
+      });
+      cy.get('button.button--primary--yellow').invoke('text').then(text => {
+        if (text.toLowerCase() === 'notify me') {
+          itemInfo.push('n')
+        } else {
+          itemInfo.push('y')
+        }
         cy.writeFile(
-          'cypress/fixtures/huckTest1.csv',
-          `${readFileData[0]}\n${itemInfo[0]},${itemInfo[1]},${itemInfo[2]},${itemInfo[3]},${itemInfo[4]}`
+          'data/scrape.csv',
+          `${readFileData[0]}\n${itemInfo[0]},${itemInfo[1]},${itemInfo[2]},${itemInfo[3]},${itemInfo[4]},${itemInfo[5]}`
         );
       });
     });
