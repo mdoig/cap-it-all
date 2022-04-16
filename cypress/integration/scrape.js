@@ -1,6 +1,6 @@
 import { urls } from '../support/urlsList.js';
 
-const header = 'brandName,itemName,itemColor,currentPrice,regularPrice,inStock';
+const header = 'brandName,itemName,itemColor,currentPrice,regularPrice,inStock,url';
 
 describe('scrape', () => {
   before(() => {
@@ -36,11 +36,11 @@ describe('scrape', () => {
       cy.get('p.mb1').children().eq(2).invoke('text').then(text => { itemInfo.push(text) });
       cy.get(`div[class='media__fixed text-right']`).children().then(children => {
         if (children.length === 2) {
-          itemInfo.push(children[0].textContent.replace(',', ''));
-          itemInfo.push(children[1].textContent.replace(',', ''));
+          itemInfo.push(children[0].textContent.replace(',', '').replace('$', ''));
+          itemInfo.push(children[1].textContent.replace(',', '').replace('$', ''));
         } else {
-          itemInfo.push(children[0].textContent.replace(',', ''));
-          itemInfo.push(children[0].textContent.replace(',', ''));
+          itemInfo.push(children[0].textContent.replace(',', '').replace('$', ''));
+          itemInfo.push(children[0].textContent.replace(',', '').replace('$', ''));
         }
       });
       cy.get('button.button--primary--yellow').invoke('text').then(text => {
@@ -49,9 +49,12 @@ describe('scrape', () => {
         } else {
           itemInfo.push('y')
         }
+      });
+      cy.url().then(url => {
+        itemInfo.push(url);
         cy.writeFile(
           'data/scrape.csv',
-          `${readFileData[0]}\n${itemInfo[0]},${itemInfo[1]},${itemInfo[2]},${itemInfo[3]},${itemInfo[4]},${itemInfo[5]}`
+          `${readFileData[0]}\n${itemInfo[0]},${itemInfo[1]},${itemInfo[2]},${itemInfo[3]},${itemInfo[4]},${itemInfo[5]},${itemInfo[6]}`
         );
       });
     });
