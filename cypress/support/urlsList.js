@@ -1,6 +1,7 @@
 export const urls = [
   'flint-and-tinder/category/p/45546-supima-air-knit-tee',
   'proof/category/p/56523-72-hour-merino-tee',
+  'proof/category/p/71811-72-hour-merino-tee',
   'corridor-nyc/category/p/61380-cowboy-dan-ss',
   'lisboa/category/p/61862-madeira-short-sleeve',
   'flint-and-tinder/category/p/59627-organic-slub-henley',
