@@ -27,7 +27,7 @@ items_all_df = pd.read_csv('data/itemsAll.csv')
 
 join_columns = ['brandName', 'itemName', 'itemColor']
 
-merge_df = pd.merge(df, items_all_df, on=join_columns, how='outer', suffixes=('', '_y')).drop(['inStock_y', 'url_y'], axis=1).fillna({'lowestPrice': 10000, 'lowPriceDate': today})
+merge_df = pd.merge(df, items_all_df, on=join_columns, how='outer', suffixes=('', '_y')).drop(['inStock_y', 'url_y'], axis=1).fillna({'lowestPrice': 10000, 'lowPriceDate': today}).dropna()
 merge_df['bestPrice'] = np.where((merge_df['lowPrice'] < merge_df['lowestPrice']), merge_df['lowPrice'], merge_df['lowestPrice'])
 merge_df['bestPriceDate'] = np.where((merge_df['lowPrice'] < merge_df['lowestPrice']), merge_df['latestCheck'], merge_df['lowPriceDate'])
 
@@ -44,6 +44,9 @@ calc_df['myCurrentPercentOff'] = ((1 - calc_df['myCurrentPrice']/calc_df['regula
 calc_df['myBestPercentOff'] = ((1 - calc_df['myBestPrice']/calc_df['regularPrice']) * 100).astype(int)
 urls = calc_df.pop('url')
 calc_df.insert(len(calc_df.columns), 'url', urls)
+
+out_of_stock_df = calc_df.loc[calc_df['inStock'] == 'n'].reset_index(drop=True).drop(['inStock'], axis=1)
+out_of_stock_df.to_csv('outOfStock.csv', index=False)
 
 filtered_df = calc_df.loc[calc_df['inStock'] == 'y'].reset_index(drop=True).drop(['inStock'], axis=1)
 
